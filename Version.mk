@@ -6,7 +6,7 @@
 
 VERSION_MAIN = 1
 VERSION_SUB  = 0
-VERSION_VAR  = 1
+VERSION_VAR  = 2
 
-# 1.0.1 First release version
+# 1.0.2 First release version
 # 0.1.0 First version

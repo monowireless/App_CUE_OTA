@@ -26,7 +26,7 @@ typedef enum{
 
 static void vProcessEvCore(tsEvent *pEv, teEvent eEvent, uint32 u32evarg);
 static bool_t bTranmitRespond(uint32 u32AddrDst);
-static vShowResult( uint32 u32id, teOTAStatus eStatus, uint8 u8LQI );
+static void vShowResult( uint32 u32id, teOTAStatus eStatus, uint8 u8LQI );
 
 uint8 u8pktver;		// 送られてきたパケットバージョン
 uint32 u32ver;		// 送られてきたアプリのバージョン
@@ -139,9 +139,9 @@ static void cbAppToCoNet_vHwEvent(uint32 u32DeviceId, uint32 u32ItemBitmap) {
  * @param pRx
  */
 static void cbAppToCoNet_vRxEvent(tsRxDataApp *pRx) {
-	int i;
+/*	int i;
 
-/*	if (IS_APPCONF_OPT_VERBOSE()) {
+	if (IS_APPCONF_OPT_VERBOSE()) {
 		V_PRINTF(LB"RxPkt: Sr:%08X De:%08X Lq:%03d Ln:%02d Cm:%d Sq:%02x [",
 				pRx->u32SrcAddr,
 				pRx->u32DstAddr,
@@ -327,48 +327,35 @@ static bool_t bTranmitRespond(uint32 u32AddrDst) {
 	return bTransmit(&sTx);
 }
 
-static vShowResult( uint32 u32id, teOTAStatus eStatus, uint8 u8LQI )
+static void vShowResult( uint32 u32id, teOTAStatus eStatus, uint8 u8LQI )
 {
 	V_PRINTF("%c[2J%c[H", 27, 27); // CLEAR SCREEN
 	V_PRINTF("\x1b[5;0H");
-	V_PRINTF(  "    \x1b[7m%s\x1b[0m SID:%08X TS:%d[ms]", ((eStatus == OTA_SUCCESS) ? "SUCCESS":"FAILURE"), u32id, u32TickCount_ms);
+	V_PRINTF(  "    \x1b[7mOTA %s\x1b[0m", ((eStatus == OTA_SUCCESS) ? "SUCCESS":"FAILURE") );
+	V_PRINTF(LB"      OTA request TS=%d[ms]", u32TickCount_ms);
+	V_PRINTF(LB"      LQI:%d (RF strength, >= 100)", u8LQI);
+	V_PRINTF(LB"      SID:%08X", u32id);
+	V_PRINTF(LB"      TWELITE CUE:v%d.%d.%d", (u32ver>>16)&0xFF, (u32ver>>8)&0xFF, u32ver&0xFF);
+	V_PRINTF(LB"      Protocol Version:0x%02X", u8pktver );
 
 	switch ( eStatus ){
 	case OTA_SUCCESS:
-		V_PRINTF(LB"      TWELITE CUE farmware Version:%d.%d.%d" LB LB, (u32ver>>16)&0xFF, (u32ver>>8)&0xFF, u32ver&0xFF);
+		V_PRINTF(LB LB"     --- TWELITE CUE is now running on the new settings. ---" );
 		break;
 	case OTA_ERROR_PRTCLVER:
-		V_PRINTF(LB"      TWELITE CUE protocol Version:%d", u8pktver );
-		V_PRINTF(LB"      This TWELITE CUE is a different protocol version.");
-		V_PRINTF(LB"      Please update TWELITE CUE.");
+		//             1234567890123456789012345678901234567890123456789012345678901234
+		V_PRINTF(LB LB" --- Different protocol version. Please update TWELITE CUE. ---" );
 		break;
 	case OTA_ERROR_APPVER:
-		V_PRINTF(LB"      TWELITE CUE FW_VER:%d.%d.%d", (u32ver>>16)&0xFF, (u32ver>>8)&0xFF, u32ver&0xFF);
-		V_PRINTF(LB"      TWELITE CUE farmware Version:%d.%d.%d", (u32ver>>16)&0xFF, (u32ver>>8)&0xFF, u32ver&0xFF);
-		V_PRINTF(LB"      Please update TWELITE CUE.");
+		V_PRINTF(LB LB" --- Different farmware version. Please update TWELITE CUE. ---" );
 		break;
 	case OTA_ERROR_LQI:
-		V_PRINTF(LB"      TWELITE CUE LQI:%d", u8LQI);
-		V_PRINTF(LB"      Please make TWELITE CUE closer." LB);
+		V_PRINTF(LB LB"     --- LQI is small. Please make TWELITE CUE closer. ---" );
 		break;
 	default:
 		break;
 	}
-	V_PRINTF(LB);
-	V_PRINTF(LB);
-	V_PRINTF(LB);
-	V_PRINTF(LB);
-	V_PRINTF(LB);
-	V_PRINTF(LB);
-	V_PRINTF(LB);
-	V_PRINTF(LB);
-	V_PRINTF(LB);
-	V_PRINTF(LB);
-	V_PRINTF(LB);
-//	V_PRINTF(LB);
-//	V_PRINTF(LB);
-//	V_PRINTF(LB);
-//	V_PRINTF(LB);
-//	V_PRINTF(LB);
+
+	V_PRINTF("\x1b[20;0H");
 	V_PRINTF(LB"\x1b[7m\x1b[G\x1b[K                                                   [Enter]:Back\x1b[0m\x1b[G");
 }
